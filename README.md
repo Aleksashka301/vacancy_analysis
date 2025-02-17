@@ -32,7 +32,8 @@ pip install -r requirements.txt
 python main.py
 ```
 Пример вывода:
-![Снимок экрана 2025-02-17 180113.png](../../../Img/ScreenShots/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202025-02-17%20180113.png)
+![Снимок экрана 2025-02-17 180113](https://github.com/user-attachments/assets/2f491324-5d8a-4a94-82b2-2d3c8b8d2b73)
+
 
 В скрипте есть список с ключевыми словами для поиска, содержимое списка можно изменять для индивидуального поиска
 ```python
