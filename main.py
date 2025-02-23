@@ -1,51 +1,19 @@
-import requests
 from environs import Env
 from terminaltables import AsciiTable
+from requests_module import request_response
+from vacancy_statistics_module import predict_salary, predict_rub_salary_hh, predict_rub_salary_sj
 
 
-def request_response(url, params, headers=None):
-    headers = headers or {}
-    response = requests.get(url, headers=headers, params=params, timeout=10)
-    response.raise_for_status()
-    return response.json()
+def analytics_with_professions(language, num_vacancies, vacansies, predict_rub_salary):
+    vacancy_analytics = predict_salary(vacansies, predict_rub_salary)
+    return [language, num_vacancies, vacancy_analytics['num_vacancies'], vacancy_analytics['average_income']]
 
 
-def predict_rub_salary_hh(vacancy):
-    income = vacancy['salary']
-    if not income or income['currency'] != 'RUR':
-        return None
-    elif income['from'] and income['to']:
-        return (income['from'] + income['to']) / 2
-    elif not income['to']:
-        return income['from'] * 1.2
-    else:
-        return income['to'] * 0.8
+def get_table(list_vacansies: list, title: str):
+    table = AsciiTable(list_vacansies)
+    table.title = title
 
-
-def predict_rub_salary_sj(vacancy):
-    if not vacancy['payment_from'] and not vacancy['payment_to']:
-        return None
-    elif vacancy['currency'] != 'rub':
-        return None
-    elif vacancy['payment_from'] and vacancy['payment_to']:
-        return (vacancy['payment_from'] + vacancy['payment_to']) / 2
-    elif not vacancy['payment_to']:
-        return vacancy['payment_from'] * 1.2
-    else:
-        return vacancy['payment_to'] + 0.8
-
-
-def predict_salary(vacancies, function):
-    sum_income, count = 0, 0
-    for vacancy in vacancies:
-        expected_income = function(vacancy)
-        if expected_income:
-            sum_income += expected_income
-            count += 1
-    try:
-        return count, int(sum_income / count)
-    except ZeroDivisionError:
-        return 0, 0
+    return table.table
 
 
 if __name__ == '__main__':
@@ -91,6 +59,7 @@ if __name__ == '__main__':
         hh_params['text'] = language
         hh_all_vacansies = []
         hh_pages = 1
+        sj_params['page'] = 0
         sj_params['keywords'] = language
         sj_all_vacansies = []
 
@@ -108,21 +77,21 @@ if __name__ == '__main__':
             if not sj_vacansies['more']:
                 break
 
-            sj_total_vacancies = sj_vacansies['total']
+        hh_vacancies_statistics.append(analytics_with_professions(
+            language,
+            hh_vacancies['found'],
+            hh_all_vacansies,
+            predict_rub_salary_hh,
+        ))
+        sj_vacancies_statistics.append(analytics_with_professions(
+            language,
+            sj_vacansies['total'],
+            sj_all_vacansies,
+            predict_rub_salary_sj,
+        ))
 
+    hh_table = get_table(hh_vacancies_statistics, 'HeadHunter Moscow')
+    sj_table = get_table(sj_vacancies_statistics, 'SuperJob Moscow')
 
-        hh_num_vacancies = predict_salary(hh_all_vacansies, predict_rub_salary_hh)[0]
-        hh_average_salary = predict_salary(hh_all_vacansies, predict_rub_salary_hh)[1]
-        sj_num_vacancies = predict_salary(sj_all_vacansies, predict_rub_salary_sj)[0]
-        sj_average_salary = predict_salary(sj_all_vacansies, predict_rub_salary_sj)[1]
-
-        hh_vacancies_statistics.append([language, hh_vacancies['found'], hh_num_vacancies, hh_average_salary])
-        sj_vacancies_statistics.append([language, sj_total_vacancies, sj_num_vacancies, sj_average_salary])
-
-    hh_table = AsciiTable(hh_vacancies_statistics)
-    sj_table = AsciiTable(sj_vacancies_statistics)
-    hh_table.title = 'HeadHunter Moscow'
-    sj_table.title = 'SuperJob Moscow'
-
-    print(hh_table.table)
-    print(sj_table.table)
+    print(hh_table)
+    print(sj_table)
