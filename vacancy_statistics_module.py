@@ -3,7 +3,7 @@ def predict_rub_salary_hh(vacancy):
     if not income or income['currency'] != 'RUR':
         return None
 
-    return income_calculation(income, 'from', 'to')
+    return calculation_income(income, 'from', 'to')
 
 
 def predict_rub_salary_sj(vacancy):
@@ -12,10 +12,10 @@ def predict_rub_salary_sj(vacancy):
     elif vacancy['currency'] != 'rub':
         return None
 
-    return income_calculation(vacancy, 'payment_from', 'payment_to')
+    return calculation_income(vacancy, 'payment_from', 'payment_to')
 
 
-def income_calculation(vacancy, income_from, income_to):
+def calculation_income(vacancy, income_from, income_to):
     if vacancy[income_from] and vacancy[income_to]:
         return (vacancy[income_from] + vacancy[income_to]) / 2
     elif not vacancy[income_to]:
@@ -33,11 +33,13 @@ def predict_salary(vacancies, predict_rub_salary):
         if expected_income:
             sum_income += expected_income
             count += 1
+
+    vacancy_analytics['num_vacancies'] = count
     try:
-        vacancy_analytics['num_vacancies'] = count
         vacancy_analytics['average_income'] = int(sum_income / count)
-        return vacancy_analytics
     except ZeroDivisionError:
         vacancy_analytics['num_vacancies'] = 0
         vacancy_analytics['average_income'] = 0
         return vacancy_analytics
+
+    return vacancy_analytics
