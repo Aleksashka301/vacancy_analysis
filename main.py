@@ -4,12 +4,9 @@ from requests_module import request_response
 from vacancy_statistics_module import predict_salary, predict_rub_salary_hh, predict_rub_salary_sj
 
 
-def analytics_with_professions(language, num_vacancies, vacansies, predict_rub_salary):
-    vacancy_analytics = predict_salary(vacansies, predict_rub_salary)
-    return [language, num_vacancies, vacancy_analytics['num_vacancies'], vacancy_analytics['average_income']]
-
-
 def get_table(list_vacansies: list, title: str):
+    vacancies_statistics = ['Язык программирования', 'Вакансий найдено', 'Вакансий обработано', 'Средняя зарплата']
+    list_vacansies.insert(0, vacancies_statistics)
     table = AsciiTable(list_vacansies)
     table.title = title
 
@@ -52,8 +49,7 @@ if __name__ == '__main__':
         'C#',
         'C программист',
     ]
-    hh_vacancies_statistics = [['Язык программирования', 'Вакансий найдено', 'Вакансий обработано', 'Средняя зарплата']]
-    sj_vacancies_statistics = [['Язык программирования', 'Вакансий найдено', 'Вакансий обработано', 'Средняя зарплата']]
+    hh_vacancies_statistics, sj_vacancies_statistics = [], []
 
     for language in programming_languages:
         hh_params['text'] = language
@@ -77,18 +73,21 @@ if __name__ == '__main__':
             if not sj_vacansies['more']:
                 break
 
-        hh_vacancies_statistics.append(analytics_with_professions(
+        hh_vacancy_analytics = predict_salary(hh_all_vacansies, predict_rub_salary_hh)
+        hh_vacancies_statistics.append([
             language,
             hh_vacancies['found'],
-            hh_all_vacansies,
-            predict_rub_salary_hh,
-        ))
-        sj_vacancies_statistics.append(analytics_with_professions(
+            hh_vacancy_analytics['num_vacancies'],
+            hh_vacancy_analytics['average_income'],
+        ])
+
+        sj_vacancy_analytics = predict_salary(sj_all_vacansies, predict_rub_salary_sj)
+        sj_vacancies_statistics.append([
             language,
             sj_vacansies['total'],
-            sj_all_vacansies,
-            predict_rub_salary_sj,
-        ))
+            sj_vacancy_analytics['num_vacancies'],
+            sj_vacancy_analytics['average_income'],
+        ])
 
     hh_table = get_table(hh_vacancies_statistics, 'HeadHunter Moscow')
     sj_table = get_table(sj_vacancies_statistics, 'SuperJob Moscow')
