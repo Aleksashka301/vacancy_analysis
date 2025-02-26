@@ -73,12 +73,10 @@ if __name__ == '__main__':
             if not sj_vacansies['more']:
                 break
 
-        hh_num_vacancies = predict_salary(hh_all_vacansies, predict_rub_salary_hh)[0]
-        hh_average_income = predict_salary(hh_all_vacansies, predict_rub_salary_hh)[1]
+        hh_num_vacancies, hh_average_income = predict_salary(hh_all_vacansies, predict_rub_salary_hh)
         hh_vacancies_statistics.append([language, hh_vacancies['found'], hh_num_vacancies, hh_average_income])
 
-        sj_num_vacancies = predict_salary(sj_all_vacansies, predict_rub_salary_sj)[0]
-        sj_average_income = predict_salary(sj_all_vacansies, predict_rub_salary_sj)[1]
+        sj_num_vacancies, sj_average_income = predict_salary(sj_all_vacansies, predict_rub_salary_sj)
         sj_vacancies_statistics.append([language, sj_vacansies['total'], sj_num_vacancies, sj_average_income])
 
     hh_table = get_table(hh_vacancies_statistics, 'HeadHunter Moscow')
